@@ -1,48 +1,174 @@
-<!doctype html>
-<html lang="pt-BR" data-theme="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light dark" />
-    <title>Modelo de Jogo — Jogos VR</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="app">
-      <header class="top">
-        <div>
-          <span class="kicker">Modelo</span>
-          <h1 id="title">Clique no Alvo</h1>
-          <p class="subtitle">Troque este jogo pelo seu. O contrato já está pronto.</p>
-        </div>
-        <button id="restart" class="btn" type="button">Reiniciar</button>
-      </header>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>game-cartoon - Matemática</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="tema-escuro">
+  <!-- Luzes neon coloridas ao redor da tela -->
+  <div class="moldura-luzes" aria-hidden="true"></div>
 
-      <main>
-        <div class="hud">
-          <span class="pill">Alvos: <strong id="score">0</strong>/<span id="total">10</span></span>
-          <span class="pill">Tempo: <strong id="timer">0,0s</strong></span>
-        </div>
+  <main class="container-jogo" id="container-principal">
+    <!-- Cabeçalho estilo painel hacker / arte urbana -->
+    <header class="cabecalho">
+      <div class="titulo-grupo">
+        <span class="tag-urbana">9º ANO • HACK &amp; STREET</span>
+        <h1 class="titulo-jogo">game-cartoon</h1>
+      </div>
+      <div class="acoes-topo">
+        <button type="button" id="btn-formulas" class="btn-icone btn-formulas" aria-label="Abrir Caderno de Fórmulas">
+          📓 Fórmulas
+        </button>
+        <button type="button" id="btn-tema" class="btn-icone" aria-label="Alternar tema claro ou escuro">
+          🌓 Tema
+        </button>
+      </div>
+    </header>
 
-        <div id="board" class="board" aria-label="Área do jogo">
-          <p id="start-hint" class="start-hint">Clique no alvo para começar</p>
-        </div>
-      </main>
+    <!-- Barra de status da partida -->
+    <section class="painel-status" aria-label="Progresso do jogo">
+      <div class="info-box">
+        <span class="rotulo">FASE</span>
+        <strong id="texto-rodada">1 / 10</strong>
+      </div>
+      <div class="info-box">
+        <span class="rotulo">NÍVEL</span>
+        <strong id="texto-nivel">Revisão 6º Ano</strong>
+      </div>
+      <div class="info-box">
+        <span class="rotulo">ACERTOS</span>
+        <strong id="texto-acertos">0</strong>
+      </div>
+    </section>
 
-      <footer class="bottom">
-        <p>Este é o arquivo <code>game.js</code>. Leia os comentários e adapte.</p>
-      </footer>
+    <!-- Pista estilo jogo de ritmo musical com luzes coloridas -->
+    <div class="pista-ritmo" aria-hidden="true">
+      <div class="trilha trilha-verde"><span class="nota"></span></div>
+      <div class="trilha trilha-vermelha"><span class="nota"></span></div>
+      <div class="trilha trilha-amarela"><span class="nota"></span></div>
+      <div class="trilha trilha-azul"><span class="nota"></span></div>
+      <div class="trilha trilha-laranja"><span class="nota"></span></div>
     </div>
 
-    <div id="result" class="overlay" hidden>
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="result-title">
-        <div class="modal-icon" aria-hidden="true">🎯</div>
-        <h2 id="result-title">Muito bem!</h2>
-        <p id="result-text">Você concluiu o jogo.</p>
-        <button id="play-again" class="btn btn-primary full" type="button">Jogar de novo</button>
+    <!-- Tela Inicial -->
+    <section id="tela-inicio" class="tela ativa">
+      <div class="cartao-terminal">
+        <h2>SISTEMA PRONTO!</h2>
+        <p>Resolva <strong>10 desafios</strong> misturando revisão (6º ao 8º ano) e conteúdos do <strong>9º ano</strong>.</p>
+        <p>Você vai alternar entre <strong>digitar rápido</strong> no teclado numérico e <strong>escolher opções</strong> nas trilhas.</p>
+        <button type="button" id="btn-iniciar" class="btn-principal">INICIAR DESAFIO ▶</button>
+      </div>
+    </section>
+
+    <!-- Tela do Jogo -->
+    <section id="tela-jogo" class="tela" hidden>
+      <div class="cartao-terminal">
+        <div class="topo-pergunta">
+          <span id="badge-modo" class="badge-modo">MODO DIGITAÇÃO</span>
+          <span id="badge-chances" class="badge-chances">Tentativa 1 de 2</span>
+        </div>
+
+        <p id="enunciado-pergunta" class="enunciado">Carregando...</p>
+        <div id="expressao-destaque" class="expressao">2 + 2 = ?</div>
+
+        <!-- Área para modo de digitação -->
+        <div id="area-digitacao" class="area-resposta">
+          <div class="visor-digitacao">
+            <span class="prompt-hacker">&gt;_</span>
+            <input type="text" id="campo-resposta" readonly placeholder="Digite o resultado..." aria-label="Resposta digitada">
+          </div>
+
+          <!-- Teclado numérico grande (mínimo 44px para celular e PC) -->
+          <div class="teclado-numerico" role="group" aria-label="Teclado numérico e sinais">
+            <button type="button" class="btn-tecla" data-valor="7">7</button>
+            <button type="button" class="btn-tecla" data-valor="8">8</button>
+            <button type="button" class="btn-tecla" data-valor="9">9</button>
+            <button type="button" class="btn-tecla tecla-sinal" data-valor="-">-</button>
+
+            <button type="button" class="btn-tecla" data-valor="4">4</button>
+            <button type="button" class="btn-tecla" data-valor="5">5</button>
+            <button type="button" class="btn-tecla" data-valor="6">6</button>
+            <button type="button" class="btn-tecla tecla-sinal" data-valor="+">+</button>
+
+            <button type="button" class="btn-tecla" data-valor="1">1</button>
+            <button type="button" class="btn-tecla" data-valor="2">2</button>
+            <button type="button" class="btn-tecla" data-valor="3">3</button>
+            <button type="button" class="btn-tecla tecla-acao" id="btn-apagar" aria-label="Apagar último dígito">⌫</button>
+
+            <button type="button" class="btn-tecla" data-valor="0">0</button>
+            <button type="button" class="btn-tecla" data-valor=",">,</button>
+            <button type="button" class="btn-tecla tecla-confirmar" id="btn-confirmar">OK ✓</button>
+          </div>
+        </div>
+
+        <!-- Área para modo de alternativas -->
+        <div id="area-alternativas" class="area-alternativas" hidden></div>
+
+        <!-- Caixa de feedback curto explicando o porquê -->
+        <div id="caixa-feedback" class="caixa-feedback" role="status" aria-live="polite" hidden></div>
+      </div>
+    </section>
+
+    <!-- Tela Final -->
+    <section id="tela-fim" class="tela" hidden>
+      <div class="cartao-terminal">
+        <span id="medalha-final" class="medalha-final">🏆</span>
+        <h2 id="titulo-final">MISSÃO CONCLUÍDA!</h2>
+        <p id="resumo-final" class="resumo-final"></p>
+        <div class="grade-resultados">
+          <div class="item-resultado">
+            <span>Acertos</span>
+            <strong id="final-acertos">0/10</strong>
+          </div>
+          <div class="item-resultado">
+            <span>Aproveitamento</span>
+            <strong id="final-porcentagem">0%</strong>
+          </div>
+          <div class="item-resultado">
+            <span>Tempo</span>
+            <strong id="final-tempo">0s</strong>
+          </div>
+        </div>
+        <button type="button" id="btn-reiniciar" class="btn-principal">JOGAR NOVAMENTE ↻</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Pasta / Modal de Fórmulas Matemáticas -->
+  <div id="modal-formulas" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-formulas" hidden>
+    <div class="modal-conteudo">
+      <div class="modal-cabecalho">
+        <h2 id="titulo-modal-formulas">📁 PASTA DE FÓRMULAS</h2>
+        <button type="button" id="btn-fechar-formulas" class="btn-fechar" aria-label="Fechar pasta de fórmulas">✕</button>
+      </div>
+      <div class="lista-formulas">
+        <div class="card-formula borda-verde">
+          <h3>⚡ Potenciação e Raiz (6º ao 9º)</h3>
+          <p><strong>a² = a · a</strong> (Ex: 5² = 25)</p>
+          <p><strong>√x = y</strong> se y² = x (Ex: √81 = 9)</p>
+        </div>
+        <div class="card-formula borda-amarela">
+          <h3>📐 Área e Perímetro (6º e 7º)</h3>
+          <p><strong>Área Retângulo:</strong> base · altura</p>
+          <p><strong>Área Triângulo:</strong> (base · altura) ÷ 2</p>
+        </div>
+        <div class="card-formula borda-azul">
+          <h3>⚖️ Equação do 1º Grau (7º e 8º)</h3>
+          <p><strong>ax + b = c</strong> → Isole o x trocando o sinal ao mudar de lado.</p>
+        </div>
+        <div class="card-formula borda-rosa">
+          <h3>🔥 Produtos Notáveis e 2º Grau (9º)</h3>
+          <p><strong>(a + b)² = a² + 2ab + b²</strong></p>
+          <p><strong>(a - b)² = a² - 2ab + b²</strong></p>
+          <p><strong>(a + b)(a - b) = a² - b²</strong></p>
+          <p><strong>Delta:</strong> Δ = b² - 4·a·c</p>
+        </div>
       </div>
     </div>
+  </div>
 
-    <script src="game.js"></script>
-  </body>
+  <script src="game.js"></script>
+</body>
 </html>
